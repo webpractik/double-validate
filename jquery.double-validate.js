@@ -1,36 +1,8 @@
-/**
- * Двойная валидация v 0.1
- *
- * Набор процедур для автоматизации биндинга форм
- * с двойной валидацией (клиент + сервер)
- *
- * Использует плагин jquery.validate [jqueryvalidation.org]
- * 1. Для каждой формы добавляем класс .js-form
- * 2. Делаем вызов formHandler
- * 3. Для случаев кастомной обработки/логики добавляем свой колбек
- *    Важно: callback он не заменяет логику валидации
- *
- *
- * Серверный обработчик должен вернуть следующий JSON
- * | {
- * | 	  status: true/false
- * | 	, errors: {
- * | 		  fieldName1: strTypeField1Error
- * | 		, fieldName2: strTypeField2Error
- * | 		[...]
- * | 	}
- * | 	, successHtmlReplacement: html
- * | }
- *
- * status: bool успех/ошибка отправки/записи формы
- * successHtmlReplacement: html замена формы
- * fieldNameN: имя поля отправки, оно же input name
- * strTypeFieldNError: описание ошибки для данного поля
- *
- * Идентификатором формы является его поле name. Форме необходимо задать ID.
- * Путь к обработчику по умолчанию берется из action формы
- */
-;(function($){
+/* ========================================================================
+ * Jquery Double Validate v0.0.3
+ * https://github.com/north-leshiy/double-validate
+ * ======================================================================== */
+ (function($){
 
 	var defaults = {
 		  request: {}
@@ -112,12 +84,12 @@
 				data: formRequest
 			})
 			.done(function(data) {
+
 				if (data.status) {
-					widget.$form.trigger('validateSuccess.doubleValidate');
-					widget.$form.replaceWith($(data.successHtmlReplacement));
+					widget.$form.trigger('validateSuccess.doubleValidate',data);
 				}else{
 					widget.errorHandler(data);
-					widget.$form.trigger('validateError.doubleValidate');
+					widget.$form.trigger('validateError.doubleValidate',data);
 				}
 			})
 			.fail(function() { alert(widget.config.errorText) })
@@ -126,11 +98,19 @@
 
 		errorHandler: function(data){
 			var widget = this;
-			// TODO: метод-враппер для обработки ошибок
+			// метод-враппер для обработки ошибок
+
+			for (var el in data.errors) {
+				widget.$form.find('input[name="'+el+'"]')
+					.addClass('error')
+					.after('<span class="help-block error">'+data.errors[el]+'</span>');
+			}
+
 		},
 
 		addError: function(){
 			var widget = this;
+
 			// TODO: метод-который навесит ошибку на поле
 		},
 
