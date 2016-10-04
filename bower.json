@@ -1,0 +1,26 @@
+{
+  "name": "double-validate",
+  "homepage": "https://github.com/north-leshiy/double-validate",
+  "authors": [
+    "ip@webpractik.ru"
+  ],
+  "description": "Плагин для двойной валидации (client+server). Содержит в себе унифицированный ajax+json запрос и умеет автоматически подставлять ошибки к конкретным полям.",
+  "main": "jquery.double-validate.js",
+  "keywords": [
+    "validate",
+    "jquery",
+    "double"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery-form-validator": "^2.3.44"
+  }
+}
