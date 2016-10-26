@@ -72,17 +72,24 @@
 		},
 
 		ajaxHandler: function(){
-			var widget      = this;
-			var formRequest = widget.$form.serialize();
-			var nameForm    = '&formId='+widget.$form.attr('name');
-			formRequest    += nameForm;
+			
+			var widget   = this;
+			var idForm   = widget.$form.attr('id');
+			var formData = new FormData( widget.$form.get()[0] );
+
+			if ( $('#'+idForm).find('input[type="file"]').length > 0 ) {
+				formData.append('file', $('input[type="file"]')[0].files[0]);
+			}
 
 			$.ajax({
 				url: widget.config.urlHandler,
 				type: widget.config.ajaxMethod,
 				dataType: 'json',
-				data: formRequest
+				data: formData,
+				processData: false,
+				contentType: false
 			})
+			
 			.done(function(data) {
 
 				if (data.status) {
