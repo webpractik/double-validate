@@ -1,6 +1,12 @@
 # Jquery Double Validate
 Плагин для двойной валидации (client+server). Содержит в себе унифицированный ajax+json запрос и умеет автоматически подставлять ошибки к конкретным полям.
 
+## Установка:
+
+```
+bower install double-validate
+```
+
 ## Example
 ```html
 <form id="form" action="/ajax/formHandler.php">
