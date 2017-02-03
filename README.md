@@ -7,6 +7,23 @@
 bower install double-validate
 ```
 
+## Parameters
+
+**validateSuccess(reponse)** - callback вызывается после успешной отправки данных на сервер и получении status=true. Принимает в параметр reponse json ответ сервера.
+
+**validateError(reponse)** - callback вызывается после успешной отправки данных на сервер и получении status=false. Принимает в параметр reponse json ответ сервера.
+
+**params** - параметры в JqueryFormValidator. Перекрывает параметры по умолчанию.
+
+**errorText** - текст для alert в случае невозможности послать ajax запрос (к примеру 500 сервера)
+
+**urlHandler** - Адрес обработчика. По умолчанию берет текущий action="" из формы.
+
+## Детали
+* При отправке данных включает блокировку, не позволяя задублировать запрос до получения ответа. В этот момент на форму навешивается класс `.double-validate-wait`, для возможности дать визуальный фидбек юзверю.
+* При получении 500, выведет примитивный alert с сообщением, которое можно заменить через параметр errorText
+* Учитывает файлы при отправке формы
+
 ## Example
 ```html
 <form id="form" action="/ajax/formHandler.php">
@@ -45,7 +62,6 @@ bower install double-validate
 	}
 }
 ```
-
 Работает на основе [jQuery Form Validator](https://github.com/victorjonsson/jQuery-Form-Validator).
 Выбран он вместо стандартного jquery.validate.js из-за большей гибкости управления из html (нужна для кастомного комопонента bitrix).
 
