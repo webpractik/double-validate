@@ -1,8 +1,8 @@
 /* ========================================================================
- * Jquery Double Validate v0.0.3
+ * Jquery Double Validate v0.0.4
  * https://github.com/north-leshiy/double-validate
  * ======================================================================== */
- (function($){
+;(function($){
 
 	var defaults = {
 		  request: {}
@@ -26,8 +26,8 @@
 		 */
 		$.each(widget.config, function(name, value) {
 			if (typeof value === 'function') {
-				widget.$form.on(name + '.doubleValidate', (function(){
-					return value(widget.$form);
+				widget.$form.on(name + '.doubleValidate', (function(event, data){
+					return value(data);
 				}))
 			}
 		});
@@ -58,22 +58,31 @@
 			/**
 			 * Навешиваем обработку плагина validator
 			 */
-			$.validate({
-				// modules : 'date, security, regexp',
+			var validateParams = {
 				form: '#'+widget.$form.attr('id'),
 				scrollToTopOnError: false,
 				borderColorOnError: false,
 				errorMessageClass: 'error',
-				language: myLanguage,
+				lang : 'ru',
 				onSuccess: function(){
 					widget.ajaxHandler();
 				}
-			});
+			};
+			validateParams = $.extend(true, {}, validateParams, widget.config.params);
+
+			$.validate(validateParams);
 		},
 
 		ajaxHandler: function(){
-			
 			var widget   = this;
+
+			if (widget.formBlocked) {
+				console.error('Дублирующий ajax запрос');
+				return;
+			}
+
+			widget.blockForm();
+
 			var idForm   = widget.$form.attr('id');
 			var formData = new FormData( widget.$form.get()[0] );
 
@@ -89,17 +98,20 @@
 				processData: false,
 				contentType: false
 			})
-			
 			.done(function(data) {
 
 				if (data.status) {
-					widget.$form.trigger('validateSuccess.doubleValidate',data);
-				}else{
+					widget.$form.trigger('validateSuccess.doubleValidate',[data]);
+					widget.unBlockForm();
+				} else {
 					widget.errorHandler(data);
-					widget.$form.trigger('validateError.doubleValidate',data);
+					widget.$form.trigger('validateError.doubleValidate',[data]);
 				}
 			})
-			.fail(function() { alert(widget.config.errorText) })
+			.fail(function() {
+				alert(widget.config.errorText);
+				widget.unBlockForm();
+			})
 			// .always(function() {console.log('always');});
 		},
 
@@ -113,6 +125,17 @@
 					.after('<span class="help-block error">'+data.errors[el]+'</span>');
 			}
 
+		},
+
+		blockForm: function(){
+			this.$form.addClass('double-validate-wait');
+			this.formBlocked = true;
+		},
+
+
+		unBlockForm: function(){
+			this.formBlocked = false;
+			this.$form.removeClass('double-validate-wait');
 		},
 
 		addError: function(){
