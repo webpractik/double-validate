@@ -1,5 +1,5 @@
 /* ========================================================================
- * Jquery Double Validate v0.0.4
+ * Jquery Double Validate v0.0.6
  * https://github.com/north-leshiy/double-validate
  * ======================================================================== */
 ;(function($){
