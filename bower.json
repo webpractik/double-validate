@@ -21,6 +21,6 @@
     "tests"
   ],
   "dependencies": {
-    "jquery-form-validator": "^2.3.44"
+    "jquery-form-validator": "^2.3.54"
   }
 }

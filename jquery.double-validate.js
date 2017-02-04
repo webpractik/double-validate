@@ -1,16 +1,58 @@
 /* ========================================================================
- * Jquery Double Validate v0.0.6
+ * Jquery Double Validate v1.0.0
  * https://github.com/north-leshiy/double-validate
  * ======================================================================== */
 ;(function($){
 
 	var defaults = {
-		  request: {}
-		, urlHandler: ""
+		  urlHandler: ""
+		, params: {
+			scrollToTopOnError: false,
+			borderColorOnError: false,
+			errorMessageClass: 'error',
+			lang: 'ru',
+		}
 		, ajaxMethod: document.location.host === 'localhost:8080' ? 'GET' : 'POST'
-		, errorText: "Спасибо за отправку формы!\n" +
-					 "Однако что-то пошло не так и мы не смогли получить данные.\n"+
-					 "Перезвоните нам или попробуйте отправить еще раз позже."
+		, errorMessage: "Спасибо за отправку формы!\n" +
+						"Однако что-то пошло не так и мы не смогли получить данные.\n"+
+						"Перезвоните нам или попробуйте отправить еще раз позже."
+		, classMainErrorContainer: 'double-validate__main-error-container'
+		, classMainErrorItem: 'double-validate__main-error-item'
+		, showErrorMessage: true
+		, reportErrorToListener: false
+		, urlErrorListener: 'https://errorlistener.w6p.ru/add'
+
+		// callbacks
+		, onServerValidateSuccess: function(){}
+		, onServerValidateError: function(){}
+		, onBlockedForm: function(){}
+		, onUnBlockedForm: function(){}
+		, onErrorRequest: function(){}
+		, sendErrorToListener: function(data, widget){
+			if (!widget.config.urlErrorListener) {
+				return;
+			}
+
+			var formTextData = widget.$form.serialize();
+			var requestInfo = {
+				formTextData: formTextData,
+				responseCode: data.status,
+				responseText: data.responseText
+			};
+
+			$.ajax({
+				url: widget.config.urlErrorListener,
+				type: 'POST',
+				dataType: 'json',
+				data: requestInfo,
+				processData: false,
+				contentType: false
+			});
+		}
+
+		// callback alias for compatibility
+		, validateSuccess: function(){}
+		, validateError:   function(){}
 	};
 
 	/**
@@ -27,7 +69,7 @@
 		$.each(widget.config, function(name, value) {
 			if (typeof value === 'function') {
 				widget.$form.on(name + '.doubleValidate', (function(event, data){
-					return value(data);
+					return value(data, widget);
 				}))
 			}
 		});
@@ -36,6 +78,10 @@
 	}
 
 	DoubleValidate.prototype = {
+		/**
+		 * Конструктор
+		 * @return {void}
+		 */
 		init: function() {
 			var widget = this;
 
@@ -43,27 +89,17 @@
 				event.preventDefault();
 			});
 
-			/**
-			 * Отключаем нативную валидацию
-			 */
+			// Отключаем нативную валидацию
 			widget.$form.attr('novalidate', 'novalidate');
 
-			/**
-			 * Устанавливаем адрес обработчика
-			 */
+			// Устанавливаем адрес обработчика
 			if (widget.config.urlHandler === "") {
 				widget.config.urlHandler = widget.$form.attr('action');
 			}
 
-			/**
-			 * Навешиваем обработку плагина validator
-			 */
+			// Навешиваем обработку плагина validator
 			var validateParams = {
 				form: '#'+widget.$form.attr('id'),
-				scrollToTopOnError: false,
-				borderColorOnError: false,
-				errorMessageClass: 'error',
-				lang : 'ru',
 				onSuccess: function(){
 					widget.ajaxHandler();
 				}
@@ -73,6 +109,10 @@
 			$.validate(validateParams);
 		},
 
+		/**
+		 * Главный ajax handler
+		 * @return {void}
+		 */
 		ajaxHandler: function(){
 			var widget   = this;
 
@@ -99,54 +139,93 @@
 				contentType: false
 			})
 			.done(function(data) {
+				widget.removeMainErrors();
 
 				if (data.status) {
-					widget.$form.trigger('validateSuccess.doubleValidate',[data]);
-					widget.unBlockForm();
+					widget.$form.trigger('onServerValidateSuccess.doubleValidate',[data]);
+					widget.$form.trigger('validateSuccess.doubleValidate',[data]); // for compability
 				} else {
 					widget.errorHandler(data);
-					widget.$form.trigger('validateError.doubleValidate',[data]);
+					widget.$form.trigger('onServerValidateError.doubleValidate',[data]);
+					widget.$form.trigger('validateError.doubleValidate',[data]); // for compability
+
 				}
 			})
-			.fail(function() {
-				alert(widget.config.errorText);
-				widget.unBlockForm();
+			.fail(function(data, textStatus, jqXHR) {
+
+				if (widget.config.showErrorMessage) {
+					alert(widget.config.errorMessage);
+				}
+
+				if (widget.config.reportErrorToListener) {
+					widget.$form.trigger('sendErrorToListener.doubleValidate',[data]);
+				}
 			})
-			// .always(function() {console.log('always');});
+			.always(function(){
+				widget.unBlockForm();
+			});
 		},
 
-		errorHandler: function(data){
-			var widget = this;
-			// метод-враппер для обработки ошибок
+		/**
+		 * Обработчик ошибок пришедших с сервера
+		 * @param  {object} response ответ сервера
+		 * @return {void}
+		 */
+		errorHandler: function(response){
 
-			for (var el in data.errors) {
-				widget.$form.find('input[name="'+el+'"]')
+			for (var el in response.errors) {
+				this.$form.find('input[name="'+el+'"]')
 					.addClass('error')
-					.after('<span class="help-block error">'+data.errors[el]+'</span>');
+					.after('<span class="help-block error">'+response.errors[el]+'</span>');
+			}
+
+			if (response.mainErrors) {
+				this.addMainErrors(response.mainErrors);
+			} else {
+				this.removeMainErrors();
 			}
 
 		},
 
+		/**
+		 * Бокирование формы, для избежания отправки запросов
+		 * @return {void}
+		 */
 		blockForm: function(){
-			this.$form.addClass('double-validate-wait');
+			this.$form.addClass('double-validate--wait');
+			this.$form.trigger('onBlockedForm.doubleValidate', [this.$form]);
 			this.formBlocked = true;
 		},
 
-
+		/**
+		 * Разблокирование формы
+		 * @return {void}
+		 */
 		unBlockForm: function(){
 			this.formBlocked = false;
-			this.$form.removeClass('double-validate-wait');
+			this.$form.trigger('onUnBlockedForm.doubleValidate', [this.$form]);
+			this.$form.removeClass('double-validate--wait');
 		},
 
-		addError: function(){
-			var widget = this;
+		/**
+		 * Добавление общих ошибок в контейнер
+		 * @param {array} mainErrors массив общих ошибок
+		 * @return {void}
+		 */
+		addMainErrors: function(mainErrors){
+			var $container = $('.'+this.config.classMainErrorContainer);
 
-			// TODO: метод-который навесит ошибку на поле
+			for (var i = mainErrors.length - 1; i >= 0; i--) {
+				$('<div class="'+this.config.classMainErrorItem+'">'+mainErrors[i]+'</div>').appendTo($container);
+			}
 		},
 
-		removeError: function(){
-			var widget = this;
-			// TODO: метод который уберет ошибку с поля (need?)
+		/**
+		 * Удаление общих ошибок
+		 * @return {void}
+		 */
+		removeMainErrors: function(){
+			$('.'+this.config.classMainErrorContainer).html('');
 		}
 
 	}
