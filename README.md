@@ -40,6 +40,7 @@ Name | Desc
 ## Example
 ```html
 <form id="form" action="/ajax/formHandler.php">
+	<div class="double-validate__main-error-container"></div>
 	<input type="email" value="" placeholder="Email" required
 		data-validation-error-msg-required="Поле, обязательно к заполнению"
 		data-validation="required">
@@ -49,15 +50,15 @@ Name | Desc
 		data-validation="required">
 </form>
 
-<script src="js/jquery.min.js"></script>
-<script src="js/jquery.form-validator.min.js"></script>
-<script src="js/jquery.double-validate.js"></script>
+<script src="bower_compnents/jquery/dist/jquery.min.js"></script>
+<script src="bower_compnents/jquery-form-validator/form-validator/jquery.form-validator.min.js"></script>
+<script src="bower_compnents/double-validate/jquery.double-validate.js"></script>
 <script>
 	$('#form').doubleValidate({
-		onServerValidateSuccess: function(data){
+		onServerValidateSuccess: function(response){
 			console.log('you request added');
 		},
-		onServerValidateError: function(data){
+		onServerValidateError: function(response){
 			console.log('error');
 		}
 	});
@@ -68,14 +69,14 @@ Name | Desc
 ```json
 {
 	  "status": true
+	, "mainErrors": [
+		"Вы уже отправили заявку"
+	]
 	, "errors": {
 		  "email": "Пользователь с таким email уже существует"
 		, "company": "Для регистрации в качестве оптового покупателя необходимо заполнить это поле"
 		[...]
 	}
-	, "mainErrors": [
-		"Вы уже отправили заявку"
-	]
 }
 ```
 Работает на основе [jQuery Form Validator](https://github.com/victorjonsson/jQuery-Form-Validator).
