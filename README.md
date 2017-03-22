@@ -50,9 +50,9 @@ Name | Desc
 		data-validation="required">
 </form>
 
-<script src="bower_compnents/jquery/dist/jquery.min.js"></script>
-<script src="bower_compnents/jquery-form-validator/form-validator/jquery.form-validator.min.js"></script>
-<script src="bower_compnents/double-validate/jquery.double-validate.js"></script>
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/jquery-form-validator/form-validator/jquery.form-validator.min.js"></script>
+<script src="bower_components/double-validate/jquery.double-validate.js"></script>
 <script>
 	$('#form').doubleValidate({
 		onServerValidateSuccess: function(response){
