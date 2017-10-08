@@ -1,5 +1,5 @@
 /* ========================================================================
- * Jquery Double Validate v1.0.0
+ * Jquery Double Validate v1.1.0
  * https://github.com/north-leshiy/double-validate
  * ======================================================================== */
 ;(function ($) {
@@ -16,11 +16,12 @@
 		, errorMessage:            'Спасибо за отправку формы!\n' +
 								   'Однако что-то пошло не так и мы не смогли получить данные.\n' +
 								   'Перезвоните нам или попробуйте отправить еще раз позже.'
+		, errorMessageNetwork:     'Отсутствует соедиение с сайтом, проверьте соедиенение с интернетом ии попробуйте отправить позже'
 		, classMainErrorContainer: 'double-validate__main-error-container'
 		, classMainErrorItem:      'double-validate__main-error-item'
 		, showErrorMessage:        true
 		, reportErrorToListener:   false
-		, urlErrorListener:        'https://errorlistener.w6p.ru/add'
+		, urlErrorListener:        'http://error-listener.w6p.ru/'
 
 		// callbacks
 		, onServerValidateSuccess: function () {}
@@ -28,7 +29,7 @@
 		, onBlockedForm:           function () {}
 		, onUnBlockedForm:         function () {}
 		, onErrorRequest:          function () {}
-		, sendErrorToListener:     function (data, widget) {
+		, sendErrorToListener:     function (errorData, widget) {
 			if (!widget.config.urlErrorListener) {
 				return;
 			}
@@ -36,25 +37,23 @@
 			var formTextData = widget.$form.serialize();
 			var requestInfo  = {
 				formTextData: formTextData,
-				responseCode: data.status,
-				responseText: data.responseText
+				responseCode: errorData.status,
+				statusText: errorData.statusText,
+				readyState: errorData.readyState,
+				responseText: errorData.responseText
 			};
 
 			$.ajax({
 				url:         widget.config.urlErrorListener,
 				type:        'POST',
 				dataType:    'json',
-				data:        requestInfo,
-				processData: false,
-				contentType: false
+				data:        requestInfo
 			});
 		}
 
 		// callback alias for compatibility
-		, validateSuccess: function () {
-		}
-		, validateError:   function () {
-		}
+		, validateSuccess: function () {}
+		, validateError:   function () {}
 	};
 
 	/**
@@ -125,7 +124,6 @@
 
 			widget.blockForm();
 
-			var idForm   = widget.$form.attr('id');
 			var formData = new FormData(widget.$form.get()[0]);
 
 			$.ajax({
@@ -149,9 +147,10 @@
 
 					}
 				})
-				.fail(function (data, textStatus, jqXHR) {
-
-					if (widget.config.showErrorMessage) {
+				.fail(function (data) {
+					if (data.status === 0 || data.readyState === 0) {
+						alert(widget.config.errorMessageNetwork);
+					} else {
 						alert(widget.config.errorMessage);
 					}
 
@@ -167,6 +166,7 @@
 		/**
 		 * Обработчик ошибок пришедших с сервера
 		 * @param  {object} response ответ сервера
+		 * @param  {object.errors} response ответ сервера
 		 * @return {void}
 		 */
 		errorHandler: function (response) {
@@ -229,8 +229,7 @@
 	};
 
 	$.fn.doubleValidate = function (options) {
-		new DoubleValidate(this.first(), options);
-		return this;
+		return new DoubleValidate(this.first(), options);
 	}
 
 }(jQuery));

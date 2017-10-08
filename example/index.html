@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Example double-validate</title>
+	<style>
+		/* this style only for example*/
+		body {
+			font: 20px/110% Arial, serif;
+		}
+
+		#form {
+			margin: 20px;
+			border: 2px solid #999999;
+			padding: 5px;
+		}
+
+		label {
+			display: block;
+		}
+
+		button,
+		input {
+			width: 200px;
+			height: 30px;
+			font-size: 20px;
+			padding: 0 5px;
+			margin-bottom: 5px;
+		}
+
+		.help-block.error {
+			display: block;
+			font-size: 15px;
+			color: #b94a48;
+		}
+	</style>
+</head>
+<body>
+
+<form id="form" action="formHandler.php" method="POST">
+
+	<!-- Данный div поставить на случай тех исключений,
+	     которые не относятся к конкретному полю -->
+	<div class="double-validate__main-error-container"></div>
+
+	<label><input type="email"
+	              name="email"
+	              value="test1@test.ru"
+	              placeholder="Email"
+	              required
+	              data-validation-error-msg-required="Поле, обязательно к заполнению"
+	              data-validation="required">
+	</label>
+
+	<label><input type="text"
+	              name="phone"
+	              value="test"
+	              placeholder="Телефон"
+	              required
+	              data-validation-error-msg-required="Поле, обязательно к заполнению"
+	              data-validation="required">
+	</label>
+
+	<button type="submit">Отправить</button>
+</form>
+
+<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+<script src="../bower_components/jquery-form-validator/form-validator/jquery.form-validator.min.js"></script>
+<script src="../jquery.double-validate.js"></script>
+<script>
+	$('#form').doubleValidate({
+		onServerValidateSuccess: function(response) {
+			console.log('you request added');
+			console.log(response);
+		},
+		onServerValidateError:   function(response) {
+			console.log('error');
+			console.log(response);
+		},
+		reportErrorToListener: true
+	});
+</script>
+
+
+</body>
+</html>
