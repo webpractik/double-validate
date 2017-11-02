@@ -4,6 +4,7 @@
 ## Установка:
 
 ```
+npm install double-validate
 bower install double-validate
 ```
 
