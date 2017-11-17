@@ -21,7 +21,7 @@
 		, classMainErrorItem:      'double-validate__main-error-item'
 		, showErrorMessage:        true
 		, reportErrorToListener:   false
-		, urlErrorListener:        'http://error-listener.w6p.ru/'
+		, urlErrorListener:        'https://error-listener.w6p.ru/'
 
 		// callbacks
 		, onServerValidateSuccess: function () {}
