@@ -24,6 +24,7 @@
 		, urlErrorListener:        'https://error-listener.w6p.ru/'
 
 		// callbacks
+		, onBeforeSend: 		   function () {}
 		, onServerValidateSuccess: function () {}
 		, onServerValidateError:   function () {}
 		, onBlockedForm:           function () {}
@@ -125,6 +126,8 @@
 			widget.blockForm();
 
 			var formData = new FormData(widget.$form.get()[0]);
+
+			widget.$form.trigger('onBeforeSend.doubleValidate', [formData]);
 
 			$.ajax({
 					url:         widget.config.urlHandler,
