@@ -4,6 +4,7 @@
  * ======================================================================== */
 
 import $ from 'jquery';
+import 'jquery-form-validator';
 
 var defaults = {
     urlHandler:                ''
