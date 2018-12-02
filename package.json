@@ -1,7 +1,7 @@
 {
   "name": "double-validate",
   "description": "Плагин для двойной валидации (client+server). Содержит в себе унифицированный ajax+json запрос и умеет автоматически подставлять ошибки к конкретным полям.",
-  "version": "1.1.3",
+  "version": "2.0",
   "author": {
     "name": "Webpractik",
     "email": "info@webpractik.ru"
